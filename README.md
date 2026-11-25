@@ -1,0 +1,1 @@
+# comparadores_logicos_arquitetura

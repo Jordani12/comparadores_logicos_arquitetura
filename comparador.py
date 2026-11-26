@@ -2,8 +2,9 @@
 
 Saídas: A>B, A=B, A<B (exatamente uma delas vale 1).
 Uso:
-    python comparador.py            # exemplo + tabela de 1 bit + teste das 256 combinações
-    python comparador.py 11 9       # compara A=11 com B=9 (valores de 0 a 15)
+    python comparador.py            # modo interativo: você digita A e B (0 a 15)
+    python comparador.py 11 9       # compara A=11 com B=9 direto, sem perguntar
+    python comparador.py --teste    # tabela de 1 bit + teste das 256 combinações
 """
 import sys
 from itertools import product
@@ -100,15 +101,56 @@ def testar_tudo():
     return erros
 
 
-if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        a, b = int(sys.argv[1]), int(sys.argv[2])
-        if not (0 <= a <= 15 and 0 <= b <= 15):
-            sys.exit("Use valores de 0 a 15.")
+def ler_numero(nome):
+    """Pede um inteiro de 0 a 15. Devolve None se o usuário digitar 'sair'."""
+    while True:
+        texto = input(f"Digite {nome} (0 a 15, ou 'sair'): ").strip().lower()
+        if texto in ("sair", "s", "q"):
+            return None
+        try:
+            n = int(texto)
+        except ValueError:
+            print("  Valor inválido: digite um número inteiro, por exemplo 11.")
+            continue
+        if 0 <= n <= 15:
+            return n
+        print("  Fora do intervalo: use um valor de 0 a 15 (4 bits).")
+
+
+def modo_interativo():
+    print("Comparador lógico de 4 bits")
+    print("Digite dois números de 0 a 15 para compará-los.\n")
+    while True:
+        a = ler_numero("A")
+        if a is None:
+            break
+        b = ler_numero("B")
+        if b is None:
+            break
+        print()
         mostrar(a, b)
-    else:
-        mostrar(11, 9)
         print()
-        tabela_1bit()
-        print()
-        sys.exit(1 if testar_tudo() else 0)
+    print("Encerrado.")
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    try:
+        if args == ["--teste"]:
+            tabela_1bit()
+            print()
+            sys.exit(1 if testar_tudo() else 0)
+        elif len(args) == 2:
+            try:
+                a, b = int(args[0]), int(args[1])
+            except ValueError:
+                sys.exit("Use dois números inteiros, por exemplo: python comparador.py 11 9")
+            if not (0 <= a <= 15 and 0 <= b <= 15):
+                sys.exit("Use valores de 0 a 15.")
+            mostrar(a, b)
+        elif not args:
+            modo_interativo()
+        else:
+            sys.exit("Uso: python comparador.py [A B | --teste]")
+    except (KeyboardInterrupt, EOFError):
+        print("\nEncerrado.")
